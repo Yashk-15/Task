@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/server.js",
+    "migrate:deploy": "prisma migrate deploy",
     "smoke": "tsx scripts/smoke-test.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

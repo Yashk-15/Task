@@ -34,8 +34,18 @@ app.use(helmet());
 // to make requests to this API. Only requests from CORS_ORIGIN are accepted.
 app.use(
   cors({
-    origin: env.CORS_ORIGIN,
+    origin(origin, callback) {
+      // Requests from mobile apps, curl, and Postman commonly have no Origin.
+      if (!origin || env.CORS_ORIGIN.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error("Origin not allowed by CORS"));
+    },
     credentials: true, // Allow cookies and Authorization headers
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -55,6 +65,11 @@ app.use(express.json());
 // Load balancers and uptime monitors ping this to confirm the server is alive.
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
+});
+
+// A simple landing endpoint for Render and anyone opening the API URL directly.
+app.get("/", (_req, res) => {
+  res.json({ success: true, message: "Project Management API is running" });
 });
 
 // ─── API Routes ───────────────────────────────────────────────────────────────

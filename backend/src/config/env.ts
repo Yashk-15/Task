@@ -23,8 +23,15 @@ const envSchema = z.object({
   // JWT_EXPIRES_IN controls how long a token is valid, e.g. "1d", "7d", "2h"
   JWT_EXPIRES_IN: z.string().min(1, "JWT_EXPIRES_IN is required"),
 
-  // CORS_ORIGIN is the URL of your frontend, e.g. "http://localhost:5173"
-  CORS_ORIGIN: z.string().url("CORS_ORIGIN must be a valid URL"),
+  // CORS_ORIGIN is one or more comma-separated frontend URLs.
+  CORS_ORIGIN: z
+    .string()
+    .min(1, "CORS_ORIGIN is required")
+    .transform((value) => value.split(",").map((origin) => origin.trim()).filter(Boolean))
+    .refine(
+      (origins) => origins.length > 0 && origins.every((origin) => z.url().safeParse(origin).success),
+      "CORS_ORIGIN must contain one or more valid URLs separated by commas"
+    ),
 
   // PORT is optional — defaults to "3000" if not set.
   // .coerce.number() converts the string "5000" to the number 5000.

@@ -8,7 +8,7 @@
 import { env } from "./config/env.js";
 import app from "./app.js";
 
-app.listen(env.PORT, () => {
+app.listen(env.PORT, "0.0.0.0", () => {
   console.log(`✅ Server running at http://localhost:${env.PORT}`);
   console.log(`   Health check → http://localhost:${env.PORT}/api/health`);
   console.log(`   Environment  → ${env.NODE_ENV}`);
