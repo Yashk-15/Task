@@ -1,0 +1,3 @@
+/* Tailwind v4 supplies utilities; these few rules set the global canvas. */
+@import "tailwindcss";
+@layer base { body { @apply m-0 bg-slate-50 text-slate-900 antialiased; } button, input, select, textarea { font: inherit; } }

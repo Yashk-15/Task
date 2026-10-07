@@ -1,0 +1,27 @@
+// Forms use React Hook Form + Zod so beginners get clear, client-side feedback.
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import toast from "react-hot-toast";
+import type { Project, ProjectInput, Task, TaskInput } from "../types";
+import { backendErrors, dateInput, errorMessage } from "../utils/helpers";
+import { projectService } from "../services/projectService";
+import { taskService } from "../services/taskService";
+import { Button, Input, Select, Spinner } from "./ui";
+
+const field = (text?: string) => text && <p className="mt-1 text-xs text-rose-600">{text}</p>;
+const projectSchema = z.object({ name: z.string().min(1, "Project name is required"), description: z.string().optional(), status: z.enum(["NOT_STARTED", "IN_PROGRESS", "COMPLETED"]), startDate: z.string().optional(), endDate: z.string().optional() }).refine((v) => !v.startDate || !v.endDate || v.endDate >= v.startDate, { message: "End date cannot be before start date", path: ["endDate"] });
+type ProjectValues = z.infer<typeof projectSchema>;
+export function ProjectForm({ project, onSave }: { project?: Project; onSave: () => void }) {
+  const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<ProjectValues>({ resolver: zodResolver(projectSchema), defaultValues: { name: project?.name ?? "", description: project?.description ?? "", status: project?.status ?? "NOT_STARTED", startDate: dateInput(project?.startDate), endDate: dateInput(project?.endDate) } });
+  const submit = async (values: ProjectValues) => { try { const data: ProjectInput = { ...values, description: values.description || undefined, startDate: values.startDate || undefined, endDate: values.endDate || undefined }; if (project) await projectService.update(project.id, data); else await projectService.create(data); toast.success(project ? "Project updated" : "Project created"); onSave(); } catch (e) { backendErrors(e).forEach(({ field: name, message }) => setError(name as keyof ProjectValues, { message })); toast.error(errorMessage(e)); } };
+  return <form className="space-y-4" onSubmit={handleSubmit(submit)}><label className="block text-sm font-medium">Name<Input {...register("name")} /></label>{field(errors.name?.message)}<label className="block text-sm font-medium">Description<textarea className="mt-1 w-full rounded-lg border border-slate-300 p-2" rows={3} {...register("description")} /></label><label className="block text-sm font-medium">Status<Select {...register("status")}><option value="NOT_STARTED">Not started</option><option value="IN_PROGRESS">In progress</option><option value="COMPLETED">Completed</option></Select></label><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium">Start date<Input type="date" {...register("startDate")} /></label><label className="text-sm font-medium">End date<Input type="date" {...register("endDate")} /></label></div>{field(errors.endDate?.message)}<Button type="submit" disabled={isSubmitting}>{isSubmitting ? <Spinner label="Saving" /> : "Save project"}</Button></form>;
+}
+
+const taskSchema = z.object({ name: z.string().min(1, "Task name is required"), description: z.string().optional(), priority: z.enum(["LOW", "MEDIUM", "HIGH"]), status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED"]), dueDate: z.string().optional() });
+type TaskValues = z.infer<typeof taskSchema>;
+export function TaskForm({ projectId, task, onSave }: { projectId: string; task?: Task; onSave: () => void }) {
+  const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<TaskValues>({ resolver: zodResolver(taskSchema), defaultValues: { name: task?.name ?? "", description: task?.description ?? "", priority: task?.priority ?? "MEDIUM", status: task?.status ?? "PENDING", dueDate: dateInput(task?.dueDate) } });
+  const submit = async (values: TaskValues) => { try { const data: TaskInput = { ...values, description: values.description || undefined, dueDate: values.dueDate || undefined }; if (task) await taskService.update(task.id, data); else await taskService.create({ ...data, projectId }); toast.success(task ? "Task updated" : "Task created"); onSave(); } catch (e) { backendErrors(e).forEach(({ field: name, message }) => setError(name as keyof TaskValues, { message })); toast.error(errorMessage(e)); } };
+  return <form className="space-y-4" onSubmit={handleSubmit(submit)}><label className="block text-sm font-medium">Name<Input {...register("name")} /></label>{field(errors.name?.message)}<label className="block text-sm font-medium">Description<textarea className="mt-1 w-full rounded-lg border border-slate-300 p-2" rows={3} {...register("description")} /></label><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium">Priority<Select {...register("priority")}><option value="LOW">Low</option><option value="MEDIUM">Medium</option><option value="HIGH">High</option></Select></label><label className="text-sm font-medium">Status<Select {...register("status")}><option value="PENDING">Pending</option><option value="IN_PROGRESS">In progress</option><option value="COMPLETED">Completed</option></Select></label></div><label className="block text-sm font-medium">Due date<Input type="date" {...register("dueDate")} /></label><Button type="submit" disabled={isSubmitting}>{isSubmitting ? <Spinner label="Saving" /> : "Save task"}</Button></form>;
+}

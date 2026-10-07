@@ -1,0 +1,6 @@
+// The dashboard fetches only aggregate numbers, with friendly loading/error states.
+import { useCallback, useEffect, useState } from "react";
+import { dashboardService } from "../services/dashboardService";
+import type { DashboardStats } from "../types";
+import { ErrorState, Skeleton, StatCard } from "../components/ui";
+export function DashboardPage() { const [stats, setStats] = useState<DashboardStats | null>(null); const [failed, setFailed] = useState(false); const load = useCallback(() => { setFailed(false); setStats(null); dashboardService.get().then(setStats).catch(() => setFailed(true)); }, []); useEffect(() => load(), [load]); const labels: [keyof DashboardStats, string][] = [["totalProjects", "Total Projects"], ["totalTasks", "Total Tasks"], ["completedTasks", "Completed Tasks"], ["pendingTasks", "Pending Tasks"], ["projectsInProgress", "Projects In Progress"]]; return <section><h1 className="text-2xl font-bold">Dashboard</h1><p className="mt-1 text-slate-600">A quick view of your work.</p>{failed ? <div className="mt-6"><ErrorState onRetry={load} /></div> : <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">{labels.map(([key, label]) => stats ? <StatCard key={key} label={label} value={stats[key]} /> : <Skeleton key={key} className="h-28" />)}</div>}</section>; }
