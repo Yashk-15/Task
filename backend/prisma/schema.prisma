@@ -1,15 +1,125 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema file — defines your database structure.
+// Prisma reads this file to generate the type-safe client and run migrations.
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+// ─── Generator ────────────────────────────────────────────────────────────────
+// Tells Prisma to generate a client using the new "prisma-client" provider
+// (available in Prisma 6+). The generated files are placed in ../generated/prisma
+// so they don't clutter the src/ folder.
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
 }
 
+// ─── Datasource ───────────────────────────────────────────────────────────────
+// Connects Prisma to PostgreSQL. DATABASE_URL is loaded from your .env file.
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+// Enums are fixed sets of values stored as strings in Postgres.
+
+// Tracks the overall progress of a Project.
+enum ProjectStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+// Tracks urgency of a Task.
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+// Tracks the current state of a Task.
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+// Represents an authenticated user of the system.
+// @@map("users") maps this model to the snake_case "users" table in Postgres.
+model User {
+  // @id marks the primary key; @default(uuid()) auto-generates a UUID v4.
+  id           String    @id @default(uuid())
+
+  // The user's display name.
+  fullName     String
+
+  // Email must be unique across all users — enforced at the DB level.
+  email        String    @unique
+
+  // We never store plain-text passwords; only the bcrypt hash goes here.
+  passwordHash String
+
+  // @default(now()) sets the timestamp automatically when a row is inserted.
+  createdAt    DateTime  @default(now())
+
+  // Relation field: one User → many Projects. Not a DB column itself.
+  projects     Project[]
+
+  @@map("users") // Actual Postgres table name will be "users"
+}
+
+// Represents a project owned by a user.
+model Project {
+  id          String        @id @default(uuid())
+
+  // Foreign key that links this project to its owner.
+  // onDelete: Cascade means if the User is deleted, all their Projects are too.
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+
+  // "?" makes description optional (nullable in Postgres).
+  description String?
+
+  // Uses the ProjectStatus enum; defaults to NOT_STARTED on insert.
+  status      ProjectStatus @default(NOT_STARTED)
+
+  // Optional date fields — store just the date part (time is midnight UTC).
+  startDate   DateTime?
+  endDate     DateTime?
+
+  createdAt   DateTime      @default(now())
+
+  // Relation field: one Project → many Tasks.
+  tasks       Task[]
+
+  // @@index speeds up queries that filter/sort by these columns.
+  @@index([userId])         // e.g. "find all projects for user X"
+  @@index([status])         // e.g. "find all IN_PROGRESS projects"
+  @@map("projects")
+}
+
+// Represents a single unit of work inside a project.
+model Task {
+  id          String     @id @default(uuid())
+
+  // Foreign key linking this task to its parent project.
+  // onDelete: Cascade means if the Project is deleted, all its Tasks are too.
+  projectId   String
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+
+  priority    Priority   @default(MEDIUM)
+  status      TaskStatus @default(PENDING)
+
+  // Optional deadline for the task.
+  dueDate     DateTime?
+
+  createdAt   DateTime   @default(now())
+
+  @@index([projectId])   // e.g. "find all tasks in project X"
+  @@index([status])      // e.g. "find all COMPLETED tasks"
+  @@map("tasks")
 }
