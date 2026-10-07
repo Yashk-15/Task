@@ -1,43 +1,28 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    // Where TypeScript reads your source files from
+    // Source files are in src, compiled output goes to dist
     "rootDir": "./src",
-    // Where TypeScript writes the compiled .js files to
     "outDir": "./dist",
 
-    // Environment Settings
-    // See also https://aka.ms/tsconfig/module
+    // Environment & Module Resolution
     "module": "nodenext",
+    "moduleResolution": "nodenext",
     "target": "esnext",
-    // "node" gives you types for Node.js built-ins (process, fs, path, etc.)
     "types": ["node"],
 
-    // Other Outputs
+    // Source maps for easier debugging
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
 
-    // Stricter Typechecking Options
+    // Strict type-checking
+    "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-
-    // Style Options
-    // "noImplicitReturns": true,
-    // "noImplicitOverride": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
-
-    // Recommended Options
-    "strict": true,
-    // "jsx" is for React — not needed in a Node/Express backend
-    // "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
-  }
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "prisma.config.ts"]
 }

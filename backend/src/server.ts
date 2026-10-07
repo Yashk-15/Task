@@ -1,34 +1,15 @@
-// src/server.ts — Entry point for the Express application.
+// src/server.ts — Entry point. Only job: start listening on a port.
+//
+// All app configuration (middleware, routes, error handlers) lives in app.ts.
+// Keeping them separate lets us import `app` in tests without starting a server.
 
-import "dotenv/config";
-// ↑ Reads .env file and injects variables into process.env.
-//   Must be the FIRST import so every module below can access process.env.
+// env.ts must be imported FIRST so that all environment variables are validated
+// before anything else runs. If something is missing, the process exits here.
+import { env } from "./config/env.js";
+import app from "./app.js";
 
-import express from "express";
-
-// ─── App Setup ───────────────────────────────────────────────────────────────
-
-const app = express();
-
-// express.json() is built-in middleware that parses incoming request bodies
-// with Content-Type: application/json and puts the result in req.body.
-app.use(express.json());
-
-// ─── Routes ──────────────────────────────────────────────────────────────────
-
-// Health-check endpoint — useful for load balancers and deployment checks.
-// Returns 200 OK with { status: "ok" } to confirm the server is alive.
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
-
-// ─── Start Server ─────────────────────────────────────────────────────────────
-
-// process.env.PORT lets you configure the port externally (e.g. in .env or CI).
-// Falls back to 3000 if PORT is not set.
-const PORT = process.env["PORT"] ?? 3000;
-
-app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
-  console.log(`   Health check: http://localhost:${PORT}/api/health`);
+app.listen(env.PORT, () => {
+  console.log(`✅ Server running at http://localhost:${env.PORT}`);
+  console.log(`   Health check → http://localhost:${env.PORT}/api/health`);
+  console.log(`   Environment  → ${env.NODE_ENV}`);
 });

@@ -6,8 +6,7 @@
 // (available in Prisma 6+). The generated files are placed in ../generated/prisma
 // so they don't clutter the src/ folder.
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 // ─── Datasource ───────────────────────────────────────────────────────────────
