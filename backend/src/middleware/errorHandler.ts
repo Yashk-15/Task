@@ -4,11 +4,12 @@
 // Express recognises this as an error handler because it takes 4 parameters:
 // (err, req, res, next). Always keep it as the LAST middleware in app.ts.
 //
-// This handler covers 4 cases:
-//   1. AppError   — our own intentional errors (e.g. "Email already taken")
-//   2. ZodError   — validation failures from zod schemas (400 Bad Request)
-//   3. Prisma P2002 — unique-constraint violation (409 Conflict)
-//   4. Everything else — unexpected crashes (500 Internal Server Error)
+// This handler covers 5 cases:
+//   1. AppError           — our own intentional errors (e.g. "Project not found" 404)
+//   2. ZodError           — validation failures from zod schemas (400 Bad Request)
+//   3. Prisma P2002       — unique-constraint violation (409 Conflict)
+//   4. Prisma P2025       — record not found on update/delete (404 Not Found)
+//   5. Everything else    — unexpected crashes (500 Internal Server Error)
 
 import type { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
@@ -43,10 +44,10 @@ export const errorHandler = (
 
   // ── Case 2: Zod validation error ─────────────────────────────────────────
   // Zod throws a ZodError when a value doesn't pass its schema.
-  // In Zod v4, issues are accessed via `.issues` (not `.errors`).
+  // In Zod v4, issues are accessed via `.issues`.
   if (err instanceof ZodError) {
     const errors = err.issues.map((issue) => ({
-      field: issue.path.join("."), // e.g. "email" or "address.city"
+      field: issue.path.join("."), // e.g. "name", "endDate", or "params.id"
       message: issue.message,
     }));
     res.status(400).json({
@@ -58,8 +59,7 @@ export const errorHandler = (
   }
 
   // ── Case 3: Prisma unique-constraint violation (P2002) ───────────────────
-  // P2002 means we tried to insert a value that must be unique but already exists,
-  // e.g. registering with an email that's already in the database.
+  // P2002 means we tried to insert a value that must be unique but already exists.
   if (
     err instanceof Prisma.PrismaClientKnownRequestError &&
     err.code === "P2002"
@@ -74,7 +74,20 @@ export const errorHandler = (
     return;
   }
 
-  // ── Case 4: Unexpected error (crash / bug) ───────────────────────────────
+  // ── Case 4: Prisma record not found (P2025) ──────────────────────────────
+  // P2025 means an update or delete failed because the record doesn't exist.
+  if (
+    err instanceof Prisma.PrismaClientKnownRequestError &&
+    err.code === "P2025"
+  ) {
+    res.status(404).json({
+      success: false,
+      message: "Resource not found",
+    });
+    return;
+  }
+
+  // ── Case 5: Unexpected error (crash / bug) ───────────────────────────────
   console.error("Unexpected error:", err);
 
   const message =

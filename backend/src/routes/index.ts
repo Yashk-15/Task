@@ -6,15 +6,21 @@
 
 import { Router } from "express";
 import authRouter from "./auth.routes.js";
+import projectRouter from "./project.routes.js";
+import taskRouter from "./task.routes.js";
+import dashboardRouter from "./dashboard.routes.js";
 
 const router = Router();
 
-// Mount auth routes at /auth
-// Combined with the /api prefix in app.ts, full paths become:
-//   POST /api/auth/register
-//   POST /api/auth/login
-//   POST /api/auth/logout
-//   GET  /api/auth/me
+// Mount feature routers under their paths
+// Combined with app.use("/api", router) in app.ts, routes become:
+//   /api/auth/*
+//   /api/projects/*
+//   /api/tasks/*
+//   /api/dashboard
 router.use("/auth", authRouter);
+router.use("/projects", projectRouter);
+router.use("/tasks", taskRouter);
+router.use("/dashboard", dashboardRouter);
 
 export default router;
