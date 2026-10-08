@@ -13,8 +13,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'providers/auth_provider.dart';
 import 'providers/connectivity_provider.dart';
+import 'providers/dashboard_provider.dart';
+import 'providers/project_provider.dart';
+import 'providers/task_provider.dart';
 import 'router.dart';
 
 void main() {
@@ -34,6 +38,9 @@ class ProjectManagerApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
+        ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => ProjectProvider()),
+        ChangeNotifierProvider(create: (_) => TaskProvider()),
       ],
       // RouterProvider reads AuthProvider and creates the GoRouter.
       child: RouterProvider(
@@ -73,7 +80,7 @@ class ProjectManagerApp extends StatelessWidget {
               // Pill-shaped filled buttons
               filledButtonTheme: FilledButtonThemeData(
                 style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
+                  minimumSize: const Size(64, 48),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

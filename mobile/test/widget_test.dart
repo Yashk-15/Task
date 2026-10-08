@@ -1,19 +1,37 @@
 // test/widget_test.dart
 //
-// Basic smoke test: checks that the app starts without crashing.
-// We can't fully test the router here because it depends on async
-// providers, so we just verify the widget tree inflates.
+// Widget test verifying that LoginScreen renders the required form elements:
+// - Email field
+// - Password field
+// - Login button
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pms_mobile/main.dart';
+import 'package:provider/provider.dart';
+import 'package:pms_mobile/providers/auth_provider.dart';
+import 'package:pms_mobile/screens/login_screen.dart';
 
 void main() {
-  testWidgets('App starts without crashing', (WidgetTester tester) async {
-    // Build the app and process one frame.
-    await tester.pumpWidget(const ProjectManagerApp());
+  testWidgets('LoginScreen renders email, password fields and login button',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      ChangeNotifierProvider<AuthProvider>(
+        create: (_) => AuthProvider(),
+        child: const MaterialApp(
+          home: LoginScreen(),
+        ),
+      ),
+    );
 
-    // The app should render something (the splash screen or a loading indicator).
-    // We don't assert specific text because auth state is async.
-    expect(find.byType(ProjectManagerApp), findsOneWidget);
+    await tester.pumpAndSettle();
+
+    // Verify Email field is present
+    expect(find.widgetWithText(TextFormField, 'Email'), findsOneWidget);
+
+    // Verify Password field is present
+    expect(find.widgetWithText(TextFormField, 'Password'), findsOneWidget);
+
+    // Verify Login button is present
+    expect(find.widgetWithText(FilledButton, 'Log In'), findsOneWidget);
   });
 }

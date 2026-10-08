@@ -141,6 +141,31 @@ class Task {
     );
   }
 
+  Task copyWith({
+    String? id,
+    String? projectId,
+    String? name,
+    String? description,
+    TaskPriority? priority,
+    TaskStatus? status,
+    DateTime? dueDate,
+    bool clearDueDate = false,
+    DateTime? createdAt,
+    TaskProject? project,
+  }) {
+    return Task(
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      priority: priority ?? this.priority,
+      status: status ?? this.status,
+      dueDate: clearDueDate ? null : (dueDate ?? this.dueDate),
+      createdAt: createdAt ?? this.createdAt,
+      project: project ?? this.project,
+    );
+  }
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'projectId': projectId,

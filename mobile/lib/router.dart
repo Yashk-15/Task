@@ -25,8 +25,9 @@ import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/dashboard_screen.dart';
-import 'screens/projects_placeholder_screen.dart';
-import 'screens/tasks_placeholder_screen.dart';
+import 'screens/projects_screen.dart';
+import 'screens/project_detail_screen.dart';
+import 'screens/tasks_screen.dart';
 import 'widgets/offline_banner.dart';
 
 // ─── Shell scaffold with bottom navigation ────────────────────────────────────
@@ -132,6 +133,14 @@ GoRouter createRouter(AuthProvider authProvider) {
         builder: (context, state) => const RegisterScreen(),
       ),
 
+      // ── Project detail screen (outside shell so back button returns cleanly) ──
+      GoRoute(
+        path: '/projects/:id',
+        builder: (context, state) => ProjectDetailScreen(
+          projectId: state.pathParameters['id']!,
+        ),
+      ),
+
       // ── Main shell with bottom navigation ──────────────────────────────────
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
@@ -152,8 +161,7 @@ GoRouter createRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/projects',
-                builder: (context, state) =>
-                    const ProjectsPlaceholderScreen(),
+                builder: (context, state) => const ProjectsScreen(),
               ),
             ],
           ),
@@ -163,7 +171,7 @@ GoRouter createRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/tasks',
-                builder: (context, state) => const TasksPlaceholderScreen(),
+                builder: (context, state) => const TasksScreen(),
               ),
             ],
           ),
