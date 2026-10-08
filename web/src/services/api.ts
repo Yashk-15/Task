@@ -14,9 +14,14 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (!error.response) toast.error("Cannot reach the server. Check your connection and try again.");
     const path = error.config?.url ?? "";
-    if (error.response?.status === 401 && !["/auth/login", "/auth/register"].some((route) => path.includes(route))) {
+    if (!error.response && !path.includes("/health")) {
+      toast.error("Cannot reach the server. Check your connection and try again.");
+    }
+    if (
+      error.response?.status === 401 &&
+      !["/auth/login", "/auth/register"].some((route) => path.includes(route))
+    ) {
       localStorage.removeItem(TOKEN_KEY);
       toast.error("Session expired, please log in again");
       window.location.assign("/login");

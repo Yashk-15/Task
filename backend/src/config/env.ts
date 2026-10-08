@@ -29,8 +29,10 @@ const envSchema = z.object({
     .min(1, "CORS_ORIGIN is required")
     .transform((value) => value.split(",").map((origin) => origin.trim()).filter(Boolean))
     .refine(
-      (origins) => origins.length > 0 && origins.every((origin) => z.url().safeParse(origin).success),
-      "CORS_ORIGIN must contain one or more valid URLs separated by commas"
+      (origins) =>
+        origins.length > 0 &&
+        origins.every((origin) => origin === "*" || z.url().safeParse(origin).success),
+      "CORS_ORIGIN must contain one or more valid URLs (or '*') separated by commas"
     ),
 
   // PORT is optional — defaults to "3000" if not set.

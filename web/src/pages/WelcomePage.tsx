@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import api from "../services/api";
 
 export function WelcomePage() {
   const navigate = useNavigate();
@@ -20,9 +19,10 @@ export function WelcomePage() {
 
   // Background warm-up ping for the backend (free tier cold-start wakeup)
   useEffect(() => {
-    api.get("/health").catch(() => {
-      // Ignored: silent warm-up ping
-    });
+    const apiUrl =
+      import.meta.env.VITE_API_URL || "https://backend-for-project-management.onrender.com/api";
+    // Fire-and-forget request wakes up Render container without blocking or throwing CORS toasts
+    fetch(`${apiUrl}/health`, { mode: "no-cors" }).catch(() => {});
   }, []);
 
   // 3.2-second smooth progress animation

@@ -31,17 +31,42 @@ app.use(helmet());
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 // Cross-Origin Resource Sharing — controls which frontend URLs are allowed
-// to make requests to this API. Only requests from CORS_ORIGIN are accepted.
+// to make requests to this API.
 app.use(
   cors({
     origin(origin, callback) {
-      // Requests from mobile apps, curl, and Postman commonly have no Origin.
-      if (!origin || env.CORS_ORIGIN.includes(origin)) {
+      // 1. Requests from mobile apps, curl, and Postman commonly have no Origin.
+      if (!origin) {
         callback(null, true);
         return;
       }
 
-      callback(new Error("Origin not allowed by CORS"));
+      // 2. Wildcard configured in CORS_ORIGIN
+      if (env.CORS_ORIGIN.includes("*")) {
+        callback(null, true);
+        return;
+      }
+
+      // 3. Explicitly allowed URLs
+      if (env.CORS_ORIGIN.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      // 4. Any Vercel deployment preview or production domain (*.vercel.app)
+      if (/^https:\/\/([a-zA-Z0-9-]+\.)*vercel\.app$/.test(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      // 5. Local development on localhost or 127.0.0.1
+      if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      // Origin not permitted: return false gracefully without throwing a 500 error
+      callback(null, false);
     },
     credentials: true, // Allow cookies and Authorization headers
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
