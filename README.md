@@ -36,8 +36,8 @@ graph TD
         Prisma["Prisma ORM Client"]
     end
 
-    Web -->|HTTP / JSON (Bearer JWT)| API
-    Mobile -->|HTTP / JSON (Bearer JWT)| API
+    Web -->|"REST API / JSON (Bearer JWT)"| API
+    Mobile -->|"REST API / JSON (Bearer JWT)"| API
     API --> Auth
     API --> Validate
     API --> Prisma
@@ -100,24 +100,24 @@ erDiagram
 
     Project {
         String id PK "UUID"
-        String userId FK "references User(id) ON DELETE CASCADE"
-        String name
+        String userId FK "references User(id)"
+        String name "Project Name"
         String description "Nullable"
-        ProjectStatus status "NOT_STARTED | IN_PROGRESS | COMPLETED"
+        ProjectStatus status "NOT_STARTED / IN_PROGRESS / COMPLETED"
         DateTime startDate "Nullable"
         DateTime endDate "Nullable"
-        DateTime createdAt
+        DateTime createdAt "Timestamp"
     }
 
     Task {
         String id PK "UUID"
-        String projectId FK "references Project(id) ON DELETE CASCADE"
-        String name
+        String projectId FK "references Project(id)"
+        String name "Task Name"
         String description "Nullable"
-        Priority priority "LOW | MEDIUM | HIGH"
-        TaskStatus status "PENDING | IN_PROGRESS | COMPLETED"
+        Priority priority "LOW / MEDIUM / HIGH"
+        TaskStatus status "PENDING / IN_PROGRESS / COMPLETED"
         DateTime dueDate "Nullable"
-        DateTime createdAt
+        DateTime createdAt "Timestamp"
     }
 ```
 
