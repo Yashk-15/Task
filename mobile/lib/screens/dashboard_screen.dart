@@ -151,6 +151,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: () => _confirmLogout(context),
           ),
         ],
+        // Thin loading bar shown during background refresh (not initial load).
+        bottom: dashboardProvider.isLoading && stats != null
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(3),
+                child: LinearProgressIndicator(),
+              )
+            : null,
       ),
       body: Builder(
         builder: (context) {

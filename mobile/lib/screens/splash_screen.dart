@@ -70,10 +70,28 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
           ),
-          // Spinner at the bottom while loading
-          const Padding(
-            padding: EdgeInsets.only(bottom: 48),
-            child: LoadingView(message: 'Loading…'),
+          // Spinner + cold-start hint at the bottom.
+          Padding(
+            padding: const EdgeInsets.only(bottom: 48),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const LoadingView(message: 'Loading…'),
+                const SizedBox(height: 12),
+                // This hint only shows after 4 seconds to avoid confusion
+                // for users with a fast connection.
+                Text(
+                  'First load may take up to a minute\nwhile the server wakes up ☕',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurfaceVariant
+                            .withValues(alpha: 0.65),
+                      ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

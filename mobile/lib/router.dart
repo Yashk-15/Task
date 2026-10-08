@@ -22,6 +22,7 @@ import 'package:provider/provider.dart';
 
 import 'providers/auth_provider.dart';
 import 'screens/splash_screen.dart';
+import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -105,16 +106,24 @@ GoRouter createRouter(AuthProvider authProvider) {
 
       // ── Logged in ────────────────────────────────────────────────────────
       if (status == AuthStatus.authenticated) {
-        // Push away from auth/splash screens.
-        if (path == '/splash' || path == '/login' || path == '/register') {
+        // Push away from auth/splash/welcome screens.
+        if (path == '/splash' || path == '/welcome' ||
+            path == '/login' || path == '/register') {
           return '/dashboard';
         }
         return null; // Allow all other routes.
       }
 
       // ── Not logged in ────────────────────────────────────────────────────
-      // Allow /login and /register; redirect everything else to /login.
-      if (path == '/login' || path == '/register') return null;
+      // /welcome, /login, /register are allowed without auth.
+      // When coming straight from /splash (first launch), show the welcome
+      // screen so the user gets the branded intro before sign-up.
+      if (path == '/welcome' || path == '/login' || path == '/register') {
+        return null;
+      }
+      // Splash finished but no session found → show welcome for first-timers.
+      if (path == '/splash') return '/welcome';
+      // Anything else (e.g. a deep link) → login.
       return '/login';
     },
 
@@ -123,6 +132,11 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
+      ),
+      // Welcome screen — shown once to first-time users before /register.
+      GoRoute(
+        path: '/welcome',
+        builder: (context, state) => const WelcomeScreen(),
       ),
       GoRoute(
         path: '/login',
